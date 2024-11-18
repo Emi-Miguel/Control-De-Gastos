@@ -75,6 +75,7 @@
                 <th>Descripción</th>
                 <th>Monto</th>
                 <th>Fecha y Hora</th>
+                <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
@@ -95,6 +96,7 @@
                 <th>Descripción</th>
                 <th>Monto</th>
                 <th>Fecha y Hora</th>
+                <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
@@ -220,23 +222,51 @@
         function actualizarTablaGastosDiarios() {
             const tbody = document.getElementById('tablaGastosDiarios').getElementsByTagName('tbody')[0];
             tbody.innerHTML = '';
-            gastosDiarios.forEach(gasto => {
+            gastosDiarios.forEach((gasto, index) => {
                 const row = tbody.insertRow();
                 row.insertCell(0).innerText = gasto.descripcion;
                 row.insertCell(1).innerText = formatCurrency(gasto.monto); // Formato de peso
                 row.insertCell(2).innerText = gasto.fechaHora;
+                const deleteCell = row.insertCell(3); // Nueva celda para el botón de eliminar
+                const deleteButton = document.createElement('button');
+                deleteButton.innerText = 'Eliminar';
+                deleteButton.style.backgroundColor = '#dc3545'; // Color de fondo rojo
+                deleteButton.style.color = 'white'; // Color de texto blanco
+                deleteButton.onclick = () => eliminarGastoDiario(index); // Llama a la función de eliminar
+                deleteCell.appendChild(deleteButton);
             });
+        }
+
+        function eliminarGastoDiario(index) {
+            gastosDiarios.splice(index, 1); // Elimina el gasto del array
+            actualizarTablaGastosDiarios(); // Actualiza la tabla
+            actualizarTotalGastosDiarios(); // Actualiza el total
+            actualizarResumen(); // Actualiza el resumen
         }
 
         function actualizarTablaGastosFijos() {
             const tbody = document.getElementById('tablaGastosFijos').getElementsByTagName('tbody')[0];
             tbody.innerHTML = '';
-            gastosFijos.forEach(gasto => {
+            gastosFijos.forEach((gasto, index) => {
                 const row = tbody.insertRow();
                 row.insertCell(0).innerText = gasto.descripcion;
                 row.insertCell(1).innerText = formatCurrency(gasto.monto); // Formato de peso
                 row.insertCell(2).innerText = gasto.fechaHora;
+                const deleteCell = row.insertCell(3); // Nueva celda para el botón de eliminar
+                const deleteButton = document.createElement('button');
+                deleteButton.innerText = 'Eliminar';
+                deleteButton.style.backgroundColor = '#dc3545'; // Color de fondo rojo
+                deleteButton.style.color = 'white'; // Color de texto blanco
+                deleteButton.onclick = () => eliminarGastoFijo(index); // Llama a la función de eliminar
+                deleteCell.appendChild(deleteButton);
             });
+        }
+
+        function eliminarGastoFijo(index) {
+            gastosFijos.splice(index, 1); // Elimina el gasto del array
+            actualizarTablaGastosFijos(); // Actualiza la tabla
+            actualizarTotalGastosFijos(); // Actualiza el total
+            actualizarResumen(); // Actualiza el resumen
         }
 
         function formatCurrency(value) {
