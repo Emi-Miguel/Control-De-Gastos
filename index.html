@@ -123,35 +123,17 @@
     </table>
 
     <script>
-        let gastosDiarios = JSON.parse(localStorage.getItem('gastosDiarios')) || [];
-        let gastosFijos = JSON.parse(localStorage.getItem('gastosFijos')) || [];
-        let ingresos = parseFloat(localStorage.getItem('ingresos')) || 0;
+        let gastosDiarios = [];
+        let gastosFijos = [];
+        let ingresos = 0;
 
-        // Función para guardar datos en Local Storage
-        function guardarDatos() {
-            localStorage.setItem('gastosDiarios', JSON.stringify(gastosDiarios));
-            localStorage.setItem('gastosFijos', JSON.stringify(gastosFijos));
-            localStorage.setItem('ingresos', ingresos);
-        }
-
-        // Función para cargar datos al cargar la página
-        function cargarDatos() {
-            actualizarTablaGastosDiarios();
-            actualizarTablaGastosFijos();
-            actualizarTotalGastosDiarios();
-            actualizarTotalGastosFijos();
-            document.getElementById('totalIngresos').innerText = `Total Ingresos: ${formatCurrency(ingresos)}`;
-            actualizarResumen();
-        }
-
-        // Funciones para agregar y eliminar gastos
         function agregarGastoDiario() {
             const descripcion = document.getElementById('gastoDiario').value;
             const monto = parseFloat(document.getElementById('montoDiario').value);
             const fechaHora = new Date().toLocaleString();
             if (descripcion && !isNaN(monto)) {
                 gastosDiarios.push({ descripcion, monto, fechaHora });
-                guardarDatos();
+                guardarDatosEnLocalStorage(); // Guardar en localStorage
                 actualizarTablaGastosDiarios();
                 actualizarTotalGastosDiarios();
                 limpiarCamposDiarios();
@@ -161,21 +143,13 @@
             }
         }
 
-        function eliminarGastoDiario(index) {
-            gastosDiarios.splice(index, 1);
-            guardarDatos();
-            actualizarTablaGastosDiarios();
-            actualizarTotalGastosDiarios();
-            actualizarResumen();
-        }
-
         function agregarGastoFijo() {
             const descripcion = document.getElementById('gastoFijo').value;
             const monto = parseFloat(document.getElementById('montoFijo').value);
             const fechaHora = new Date().toLocaleString();
             if (descripcion && !isNaN(monto)) {
                 gastosFijos.push({ descripcion, monto, fechaHora });
-                guardarDatos();
+                guardarDatosEnLocalStorage(); // Guardar en localStorage
                 actualizarTablaGastosFijos();
                 actualizarTotalGastosFijos();
                 limpiarCamposFijos();
@@ -185,21 +159,14 @@
             }
         }
 
-        function eliminarGastoFijo(index) {
-            gastosFijos.splice(index, 1);
-            guardarDatos();
-            actualizarTablaGastosFijos();
-            actualizarTotalGastosFijos();
-            actualizarResumen();
-        }
-
         function agregarIngreso() {
             const ingreso = parseFloat(document.getElementById('ingresoMensual').value);
-            if (!isNaN(ingreso)) {
+            if (!isNaN(ingreso)) { // Verifica que el ingreso sea un número
                 ingresos += ingreso;
                 document.getElementById('totalIngresos').innerText = `Total Ingresos: ${formatCurrency(ingresos)}`;
-                guardarDatos();
+                // Limpiar campo después de agregar
                 document.getElementById('ingresoMensual').value = '';
+                guardarDatosEnLocalStorage(); // Guardar en localStorage
                 actualizarResumen();
             } else {
                 alert("Por favor, ingresa un monto válido.");
@@ -207,38 +174,43 @@
         }
 
         function borrarTotalIngresos() {
-            ingresos = 0;
+            ingresos = 0; // Restablecer ingresos a 0
+            localStorage.setItem('ingresos', ingresos); // Actualizar el localStorage
             document.getElementById('totalIngresos').innerText = `Total Ingresos: ${formatCurrency(ingresos)}`;
-            guardarDatos();
             actualizarResumen();
         }
 
+        // Función para limpiar campos de gastos diarios
         function limpiarCamposDiarios() {
             document.getElementById('gastoDiario').value = '';
             document.getElementById('montoDiario').value = '';
         }
 
+        // Función para limpiar campos de gastos fijos
         function limpiarCamposFijos() {
             document.getElementById('gastoFijo').value = '';
             document.getElementById('montoFijo').value = '';
         }
 
+        // Función para limpiar la tabla de gastos diarios
         function limpiarTablaGastosDiarios() {
             gastosDiarios = [];
-            guardarDatos(); // Asegúrate de guardar los cambios
+            guardarDatosEnLocalStorage(); // Guardar en localStorage
             actualizarTablaGastosDiarios();
             actualizarTotalGastosDiarios();
             actualizarResumen();
         }
 
+        // Función para limpiar la tabla de gastos fijos
         function limpiarTablaGastosFijos() {
             gastosFijos = [];
-            guardarDatos(); // Asegúrate de guardar los cambios
+            guardarDatosEnLocalStorage(); // Guardar en localStorage
             actualizarTablaGastosFijos();
             actualizarTotalGastosFijos();
             actualizarResumen();
         }
 
+        // Función para detectar la tecla Enter
         document.addEventListener('keypress', function(event) {
             if (event.key === 'Enter') {
                 if (document.activeElement === document.getElementById('gastoDiario') || document.activeElement === document.getElementById('montoDiario')) {
@@ -257,16 +229,24 @@
             gastosDiarios.forEach((gasto, index) => {
                 const row = tbody.insertRow();
                 row.insertCell(0).innerText = gasto.descripcion;
-                row.insertCell(1).innerText = formatCurrency(gasto.monto);
+                row.insertCell(1).innerText = formatCurrency(gasto.monto); // Formato de peso
                 row.insertCell(2).innerText = gasto.fechaHora;
-                const deleteCell = row.insertCell(3);
+                const deleteCell = row.insertCell(3); // Nueva celda para el botón de eliminar
                 const deleteButton = document.createElement('button');
                 deleteButton.innerText = 'Eliminar';
-                deleteButton.style.backgroundColor = '#dc3545';
-                deleteButton.style.color = 'white';
-                deleteButton.onclick = () => eliminarGastoDiario(index);
+                deleteButton.style.backgroundColor = '#dc3545'; // Color de fondo rojo
+                deleteButton.style.color = 'white'; // Color de texto blanco
+                deleteButton.onclick = () => eliminarGastoDiario(index); // Llama a la función de eliminar
                 deleteCell.appendChild(deleteButton);
             });
+        }
+
+        function eliminarGastoDiario(index) {
+            gastosDiarios.splice(index, 1);
+            guardarDatosEnLocalStorage(); // Guardar en localStorage
+            actualizarTablaGastosDiarios();
+            actualizarTotalGastosDiarios();
+            actualizarResumen();
         }
 
         function actualizarTablaGastosFijos() {
@@ -275,16 +255,24 @@
             gastosFijos.forEach((gasto, index) => {
                 const row = tbody.insertRow();
                 row.insertCell(0).innerText = gasto.descripcion;
-                row.insertCell(1).innerText = formatCurrency(gasto.monto);
+                row.insertCell(1).innerText = formatCurrency(gasto.monto); // Formato de peso
                 row.insertCell(2).innerText = gasto.fechaHora;
-                const deleteCell = row.insertCell(3);
+                const deleteCell = row.insertCell(3); // Nueva celda para el botón de eliminar
                 const deleteButton = document.createElement('button');
                 deleteButton.innerText = 'Eliminar';
-                deleteButton.style.backgroundColor = '#dc3545';
-                deleteButton.style.color = 'white';
-                deleteButton.onclick = () => eliminarGastoFijo(index);
+                deleteButton.style.backgroundColor = '#dc3545'; // Color de fondo rojo
+                deleteButton.style.color = 'white'; // Color de texto blanco
+                deleteButton.onclick = () => eliminarGastoFijo(index); // Llama a la función de eliminar
                 deleteCell.appendChild(deleteButton);
             });
+        }
+
+        function eliminarGastoFijo(index) {
+            gastosFijos.splice(index, 1);
+            guardarDatosEnLocalStorage(); // Guardar en localStorage
+            actualizarTablaGastosFijos();
+            actualizarTotalGastosFijos();
+            actualizarResumen();
         }
 
         function formatCurrency(value) {
@@ -311,8 +299,35 @@
             document.getElementById('saldoDisponible').innerText = formatCurrency(saldo);
         }
 
-        // Cargar datos al cargar la página
-        window.onload = cargarDatos;
+        function guardarDatosEnLocalStorage() {
+            localStorage.setItem('gastosDiarios', JSON.stringify(gastosDiarios));
+            localStorage.setItem('gastosFijos', JSON.stringify(gastosFijos));
+            localStorage.setItem('ingresos', ingresos);
+        }
+
+        window.onload = function() {
+            const gastosDiariosStorage = localStorage.getItem('gastosDiarios');
+            const gastosFijosStorage = localStorage.getItem('gastosFijos');
+            const ingresosStorage = localStorage.getItem('ingresos');
+
+            if (gastosDiariosStorage) {
+                gastosDiarios = JSON.parse(gastosDiariosStorage);
+            }
+            if (gastosFijosStorage) {
+                gastosFijos = JSON.parse(gastosFijosStorage);
+            }
+            if (ingresosStorage) {
+                ingresos = parseFloat(ingresosStorage);
+                document.getElementById('totalIngresos').innerText = `Total Ingresos: ${formatCurrency(ingresos)}`; // Actualizar el total de ingresos en la interfaz
+            }
+
+            // Actualizar tablas y totales al cargar
+            actualizarTablaGastosDiarios();
+            actualizarTablaGastosFijos();
+            actualizarTotalGastosDiarios();
+            actualizarTotalGastosFijos();
+            actualizarResumen();
+        };
     </script>
 </body>
 </html>
